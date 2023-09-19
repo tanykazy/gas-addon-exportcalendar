@@ -1,3 +1,6 @@
+# for clasp
+.clasp.json
+
 # Logs
 logs
 *.log
