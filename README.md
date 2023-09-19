@@ -23,6 +23,6 @@ Google カレンダーの予定の説明を含めて印刷する
 ```bash
 git clone https://github.com/tanykazy/gas-addon-exportcalendar.git
 cd gas-addon-exportcalendar
-clasp create --type standalone
-clasp push
+npm install
+npm run create
 ```
