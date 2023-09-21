@@ -1,10 +1,11 @@
 /**
  * カレンダーの内容をドキュメントにエクスポートする
- * @param {string} calendarId カレンダー選択UIで選択されたカレンダーのID
+ * @param {GoogleAppsScript.Calendar} calendar - カレンダー選択UIで選択されたカレンダーのID
+ * @param {Date} from - 期間の開始日付
+ * @param {Date} to - 期間の終了日付
  * @returns {string} カレンダーのデータを書き出したドキュメントファイルのURL
  */
-function exportDocs(calendarId) {
-    const calendar = CalendarApp.getCalendarById(calendarId);
+function exportDocs(calendar, from, to) {
 
     // do something...
 

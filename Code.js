@@ -59,6 +59,8 @@ function onClickActionExport(event) {
     console.log(event);
 
     const id = event.formInput['selected_calendar_field'];
+    const from = event.formInput['from_date_field'];
+    const to = event.formInput['to_date_field'];
 
     if (!id) {
         return CardService.newActionResponseBuilder()
@@ -67,7 +69,9 @@ function onClickActionExport(event) {
             .build();
     }
 
-    const url = exportDocs(id);
+    const calendar = CalendarApp.getCalendarById(id);
+
+    const url = exportDocs(calendar, from, to);
 
     return CardService.newActionResponseBuilder()
         .setOpenLink(CardService.newOpenLink()
