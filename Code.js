@@ -59,8 +59,6 @@ function onClickActionExport(event) {
     console.log(event);
 
     const id = event.formInput['selected_calendar_field'];
-    const from = event.formInput['from_date_field'];
-    const to = event.formInput['to_date_field'];
 
     if (!id) {
         return CardService.newActionResponseBuilder()
@@ -68,6 +66,9 @@ function onClickActionExport(event) {
                 .setText('カレンダーが選択されていません'))
             .build();
     }
+
+    const from = event.formInput['from_date_field'] ? new Date(event.formInput['from_date_field'].msSinceEpoch) : null;
+    const to = event.formInput['to_date_field'] ? new Date(event.formInput['to_date_field'].msSinceEpoch) : null;
 
     const calendar = CalendarApp.getCalendarById(id);
 
