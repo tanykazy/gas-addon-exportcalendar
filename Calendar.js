@@ -18,3 +18,25 @@ function getAllCalendars() {
         };
     });
 }
+
+function sortCalendar(calendars) {
+    const primary = [];
+    const selected = [];
+    const owned = [];
+    const hidden = [];
+    const other = [];
+    for (const calendar of calendars) {
+        if (calendar.isMyPrimaryCalendar()) {
+            primary.push(calendar);
+        } else if (calendar.isSelected()) {
+            selected.push(calendar);
+        } else if (calendar.isOwnedByMe()) {
+            owned.push(calendar);
+        } else if (calendar.isHidden()) {
+            hidden.push(calendar);
+        } else {
+            other.push(calendar);
+        }
+    }
+    return [...primary, ...selected, ...owned, ...other, ...hidden];
+}
