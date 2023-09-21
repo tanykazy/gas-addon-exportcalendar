@@ -18,9 +18,26 @@ function onHomepageTrigger(event) {
         selectionInput.addItem(calendar.name, calendar.id, false);
     }
 
-    const section = CardService.newCardSection()
+    const sectionSelectCalendar = CardService.newCardSection()
         .setHeader('カレンダーを選択する')
         .addWidget(selectionInput);
+
+    const now = new Date();
+
+    const fromDatePicker = CardService.newDatePicker()
+        .setFieldName('from_date_field')
+        .setTitle('From')
+        .setValueInMsSinceEpoch(now.setDate(1));
+
+    const toDatePicker = CardService.newDatePicker()
+        .setFieldName('to_date_field')
+        .setTitle('To')
+        .setValueInMsSinceEpoch(now.setMonth(now.getMonth() + 1, 0));
+
+    const sectionDatePick = CardService.newCardSection()
+        .setHeader('期間を選択する')
+        .addWidget(fromDatePicker)
+        .addWidget(toDatePicker);
 
     const footer = CardService.newFixedFooter()
         .setPrimaryButton(CardService.newTextButton()
@@ -31,7 +48,8 @@ function onHomepageTrigger(event) {
                 .setParameters({})));
 
     card.setHeader(header);
-    card.addSection(section);
+    card.addSection(sectionSelectCalendar);
+    card.addSection(sectionDatePick);
     card.setFixedFooter(footer);
 
     return card.build();
