@@ -16,13 +16,15 @@ Google カレンダーの予定の説明を含めて印刷する
 
 ## Contributing
 
-1. Fork repository
-2. Create a new Google Apps Script project
-3. Write all local files
-
 ```bash
 git clone https://github.com/tanykazy/gas-addon-exportcalendar.git
 cd gas-addon-exportcalendar
 npm install
 npm run create
 ```
+
+![Screenshot1](Screenshot1.png)
+_デプロイをテスト_ をクリック
+
+![Screenshot2](Screenshot2.png)
+_インストール_ をクリック
