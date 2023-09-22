@@ -52,14 +52,16 @@ function createReport(calendar, from, to) {
  */
 function getReportURL(calendar, from, to) {
   const report = createReport(calendar, from, to);
-  return report.getUrl();
+  const movedReport = createReportInFolder(report);
+  return movedReport.getUrl();
 }
 
 /**
  * レポートを指定のフォルダに保存する
+ * @param {GoogleAppsScript.Drive.File} report - 移動するドキュメントのファイル
  * @returns {GoogleAppsScript.Drive.File} フォルダに移動されたドキュメントのファイル
  */
-function createReportInFolder() {
+function createReportInFolder(report) { // 引数を追加
   const folderName = "calendarReport";
   let folder;
   
@@ -71,8 +73,7 @@ function createReportInFolder() {
     folder = DriveApp.createFolder(folderName);
   }
 
-  // レポートのドキュメントを作成および移動
-  const report = createReport();
+  // ドキュメントをフォルダに移動
   report.moveTo(folder);
 
   return report;
