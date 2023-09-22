@@ -47,7 +47,7 @@ _デプロイをテスト_ をクリック
 
 <img src="./Screenshot1.png" width="150">
 
-_インストール_ をクリックすると、ご自身の Workspace の Gmail の右側に、アドオンが表示されます。
+_インストール_ をクリックすると、ご自身の Workspace の Google カレンダーの右側に、アドオンが表示されます。
 
 <img src="./Screenshot2.png" width="500">
 
