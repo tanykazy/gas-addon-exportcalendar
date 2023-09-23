@@ -1,77 +1,101 @@
-/**
- * カレンダーの内容をドキュメントにエクスポートする
- * @param {GoogleAppsScript.Calendar[]} calendars - カレンダー選択UIで選択されたカレンダー
- * @param {Date | null} from - 期間の開始日付
- * @param {Date | null} to - 期間の終了日付
- * @returns {string} カレンダーのデータを書き出したドキュメントファイルのURL
- */
-function exportDocs(calendars, from, to) {
-  const calendar = calendars.pop();
-  return getReportURL(calendar, from, to);
-}
-
-/**
- * カレンダーから指定された期間のイベントを取得し、レポートのドキュメントを作成する
- * @param {GoogleAppsScript.Calendar} calendar - 選択されたカレンダー
- * @param {Date | null} from - 期間の開始日付
- * @param {Date | null} to - 期間の終了日付
- * @returns {GoogleAppsScript.Drive.File} 作成されたドキュメントのファイル
- */
-function createReport(calendar, from, to) {
-    // 新規Googleドキュメントを作成
+function createReport(calendars, from, to) {
     const doc = DocumentApp.create("カレンダーレポート_" + new Date().toISOString());
     const body = doc.getBody();
     
-    // 文書の内容を追加
-    body.appendParagraph(`カレンダーレポート: ${calendar.getName()} \n期間: ${from ? from.toLocaleDateString() : "開始日未指定"} から ${to ? to.toLocaleDateString() : "終了日未指定"}\n`);
-
-    // カレンダーからイベントを取得
-    const events = calendar.getEvents(from, to);
+    body.appendParagraph(`カレンダーレポート \n期間: ${from ? from.toLocaleDateString() : "開始日未指定"} から ${to ? to.toLocaleDateString() : "終了日未指定"}\n`);
     
-    const eventData = events.map(event => {
-        return [event.getStartTime().toLocaleDateString(), event.getTitle(), event.getDescription() || ""];
-    });
+    // 全てのカレンダーからのイベントを保持する配列
+    const allEventsData = [];
 
-    // ヘッダー情報を追加
-    const data = [["日時", "内容", "詳細"], ...eventData];
+    for (const calendar of calendars) {
+        if (!calendar.getName) {
+            console.error(`Invalid calendar object: ${JSON.stringify(calendar)}`);
+            continue;
+        }
 
-    body.appendTable(data);
+        const events = calendar.getEvents(from, to);
+    
+        const eventData = events.map(event => {
+            return {
+                date: event.getStartTime().toLocaleDateString(),
+                title: event.getTitle(),
+                description: event.getDescription() || "",
+                calendarName: calendar.getName() // カレンダーの名前を追加
+            };
+        });
+
+        allEventsData.push(...eventData);
+    }
+
+    // 日付でソート
+    allEventsData.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    // 各日付ごとに表を作成
+    let currentDate = "";
+    let currentTableData = [["カレンダー", "内容", "詳細"]]; // 「日時」のカラムを削除
+    for (const eventData of allEventsData) {
+        if (currentDate !== eventData.date) {
+            // 新しい日付の場合、これまでの表を追加して新しい表を開始
+            if (currentTableData.length > 1) {
+                body.appendParagraph(currentDate);
+                body.appendTable(currentTableData);
+                body.appendParagraph("\n"); // 空行を追加
+            }
+            currentDate = eventData.date;
+            currentTableData = [["カレンダー", "内容", "詳細"]]; // 「日時」のカラムを削除
+        }
+        currentTableData.push([eventData.calendarName, eventData.title, eventData.description]);
+    }
+    // 最後の表を追加
+    if (currentTableData.length > 1) {
+        body.appendParagraph(currentDate);
+        body.appendTable(currentTableData);
+    }
 
     return DriveApp.getFileById(doc.getId());
 }
 
-/**
- * レポートのドキュメントのURLを取得する
- * @param {GoogleAppsScript.Calendar} calendar - カレンダー選択UIで選択されたカレンダー
- * @param {Date | null} from - 期間の開始日付
- * @param {Date | null} to - 期間の終了日付
- * @returns {string} レポートのドキュメントのURL
- */
-function getReportURL(calendar, from, to) {
-  const report = createReport(calendar, from, to);
-  const movedReport = createReportInFolder(report);
-  return movedReport.getUrl();
+function setCalendars(calendarIds) {
+    const calendars = calendarIds.map(id => CalendarApp.getCalendarById(id));
+    return calendars;
 }
 
-/**
- * レポートを指定のフォルダに保存する
- * @param {GoogleAppsScript.Drive.File} report - 移動するドキュメントのファイル
- * @returns {GoogleAppsScript.Drive.File} フォルダに移動されたドキュメントのファイル
- */
-function createReportInFolder(report) { // 引数を追加
-  const folderName = "calendarReport";
-  let folder;
+function exportDocs(calendarIds, from, to) {
+    const calendars = setCalendars(calendarIds);
+    console.log(from);
+    console.log(to);
+    return getReportURL(calendars, from, to);
+}
+
+function getReportURL(calendars, from, to) {
+    const report = createReport(calendars, from, to);
+    const movedReport = createReportInFolder(report);
+    return movedReport.getUrl();
+}
+
+function createReportInFolder(report) {
+    const folderName = "calendarReport";
+    let folder;
   
-  // フォルダの存在確認および作成
-  const folders = DriveApp.getFoldersByName(folderName);
-  if (folders.hasNext()) {
-    folder = folders.next();
-  } else {
-    folder = DriveApp.createFolder(folderName);
-  }
+    const folders = DriveApp.getFoldersByName(folderName);
+    if (folders.hasNext()) {
+        folder = folders.next();
+    } else {
+        folder = DriveApp.createFolder(folderName);
+    }
 
-  // ドキュメントをフォルダに移動
-  report.moveTo(folder);
+    report.moveTo(folder);
+    return report;
+}
 
-  return report;
+function setCalendars(calendarIds) {
+    const calendars = calendarIds.map(id => {
+        const calendar = CalendarApp.getCalendarById(id);
+        if (!calendar) {
+            console.error(`カレンダーが見つかりません: ${id}`);
+            return null;
+        }
+        return calendar;
+    }).filter(calendar => calendar !== null); // nullのカレンダーをフィルタリング
+    return calendars;
 }
