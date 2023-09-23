@@ -1,16 +1,13 @@
 /**
  * カレンダーの内容をドキュメントにエクスポートする
- * @param {GoogleAppsScript.Calendar} calendar - カレンダー選択UIで選択されたカレンダー
+ * @param {GoogleAppsScript.Calendar[]} calendars - カレンダー選択UIで選択されたカレンダー
  * @param {Date | null} from - 期間の開始日付
  * @param {Date | null} to - 期間の終了日付
  * @returns {string} カレンダーのデータを書き出したドキュメントファイルのURL
  */
-function exportDocs(calendar, from, to) {
-    console.log(calendar.getName());
-    console.log(from);
-    console.log(to);
-
-    return getReportURL(calendar, from, to);
+function exportDocs(calendars, from, to) {
+  const calendar = calendars.pop();
+  return getReportURL(calendar, from, to);
 }
 
 /**
