@@ -6,20 +6,23 @@ function exportDocs(calendarIds, from, to) {
 }
 
 function createReport(calendars, from, to) {
-    const doc = DocumentApp.create("カレンダーレポート_" + new Date().toISOString());
+    // 作成するドキュメントの名前を、生成する期間を反映して指定
+    const docName = `カレンダー・レポート_${from.getFullYear()}年${from.getMonth() + 1}月${from.getDate()}日〜${to.getMonth() + 1}月${to.getDate()}日`;
+    const doc = DocumentApp.create(docName);
     const body = doc.getBody();
     
-    body.appendParagraph(`カレンダーレポート \n期間: ${from ? from.toLocaleDateString() : "開始日未指定"} から ${to ? to.toLocaleDateString() : "終了日未指定"}\n`);
+    // カレンダー名を取得し、カンマで結合
+    const calendarNames = calendars.map(calendar => calendar.getName()).join(" , ");
+    
+    // レポートの冒頭を指定の書式に変更
+    body.appendParagraph("カレンダー・レポート\n");
+    body.appendParagraph(`カレンダー名 : ${calendarNames}\n`);
+    body.appendParagraph(`期間: ${from.toLocaleDateString()} から ${to.toLocaleDateString()}\n\n`);
     
     // 全てのカレンダーからのイベントを保持する配列
     const allEventsData = [];
 
     for (const calendar of calendars) {
-        if (!calendar.getName) {
-            console.error(`Invalid calendar object: ${JSON.stringify(calendar)}`);
-            continue;
-        }
-
         const events = calendar.getEvents(from, to);
     
         const eventData = events.map(event => {
@@ -30,7 +33,6 @@ function createReport(calendars, from, to) {
                 time: `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')} - ${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`,
                 title: event.getTitle(),
                 description: event.getDescription() || "",
-                calendarName: calendar.getName() // カレンダーの名前を追加
             };
         });
 
@@ -42,7 +44,7 @@ function createReport(calendars, from, to) {
     
     // 各日付ごとに表を作成
     let currentDate = "";
-    let currentTableData = [["カレンダー", "時刻", "内容", "詳細"]];
+    let currentTableData = [["時刻", "内容", "詳細"]];
     for (const eventData of allEventsData) {
         if (currentDate !== eventData.date) {
             // 新しい日付の場合、これまでの表を追加して新しい表を開始
@@ -52,9 +54,9 @@ function createReport(calendars, from, to) {
                 body.appendParagraph("\n"); // 空行を追加
             }
             currentDate = eventData.date;
-            currentTableData = [["カレンダー", "時刻", "内容", "詳細"]];
+            currentTableData = [["時刻", "内容", "詳細"]];
         }
-        currentTableData.push([eventData.calendarName, eventData.time, eventData.title, eventData.description]);
+        currentTableData.push([eventData.time, eventData.title, eventData.description]);
     }
     // 最後の表を追加
     if (currentTableData.length > 1) {
@@ -64,7 +66,6 @@ function createReport(calendars, from, to) {
 
     return DriveApp.getFileById(doc.getId());
 }
-
 
 function getReportURL(calendars, from, to) {
     const report = createReport(calendars, from, to);
