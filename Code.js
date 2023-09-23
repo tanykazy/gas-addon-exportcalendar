@@ -106,7 +106,7 @@ function onClickActionExport(event) {
     const from = event.formInput['from_date_field'] ? new Date(event.formInput['from_date_field'].msSinceEpoch) : null;
     const to = event.formInput['to_date_field'] ? new Date(event.formInput['to_date_field'].msSinceEpoch) : null;
 
-    const url = exportDocs(selectedCalendarIds, from, to);
+    url = exportDocs(selectedCalendarIds, from, to);
 
     return CardService.newActionResponseBuilder()
         .setOpenLink(CardService.newOpenLink()
