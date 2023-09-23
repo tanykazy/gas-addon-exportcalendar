@@ -1,27 +1,25 @@
-
 function onHomepageTrigger(event) {
     console.log(event);
-
+  
+    const numOfDropdowns = event.parameters ? event.parameters.numOfDropdowns || 1 : 1;
+  
     const card = CardService.newCardBuilder();
-
-    const header = CardService.newCardHeader()
-        .setTitle('カレンダーを選択して書き出す');
-
-    const selectionInput = CardService.newSelectionInput()
-        .setType(CardService.SelectionInputType.DROPDOWN)
-        .setFieldName('selected_calendar_field')
-        .setTitle('すべてのカレンダー');
-
-    const calendars = getAllCalendars();
-    console.log(calendars);
-    for (const calendar of calendars) {
-        selectionInput.addItem(calendar.name, calendar.id, false);
+    const header = CardService.newCardHeader().setTitle('カレンダーを選択して書き出す');
+    card.setHeader(header);
+  
+    for (let i = 0; i < numOfDropdowns; i++) {
+        const selectionInput = createCalendarDropdown(i);
+        const sectionSelectCalendar = CardService.newCardSection().addWidget(selectionInput);
+        card.addSection(sectionSelectCalendar);
     }
-
-    const sectionSelectCalendar = CardService.newCardSection()
-        .setHeader('カレンダーを選択する')
-        .addWidget(selectionInput);
-
+  
+    const addButton = CardService.newTextButton()
+        .setText('+')
+        .setOnClickAction(CardService.newAction()
+            .setFunctionName('onAddDropdown')
+            .setParameters({numOfDropdowns: (parseInt(numOfDropdowns) + 1).toString()}));
+    const sectionAddButton = CardService.newCardSection().addWidget(addButton);
+  
     const now = new Date();
 
     const fromDatePicker = CardService.newDatePicker()
@@ -47,20 +45,58 @@ function onHomepageTrigger(event) {
                 .setFunctionName(onClickActionExport.name)
                 .setParameters({})));
 
-    card.setHeader(header);
-    card.addSection(sectionSelectCalendar);
+    card.addSection(sectionAddButton);
     card.addSection(sectionDatePick);
     card.setFixedFooter(footer);
 
     return card.build();
 }
+ 
+function createCalendarDropdown(index) {
+    const calendars = getAllCalendars();
+    const selectionInput = CardService.newSelectionInput()
+        .setType(CardService.SelectionInputType.DROPDOWN)
+        .setFieldName(`selected_calendar_field_${index}`)
+        .setTitle(`カレンダー ${index + 1}`);
+    for (const calendar of calendars) {
+        selectionInput.addItem(calendar.name, calendar.id, false);
+    }
+    return selectionInput;
+}
+  
+function onAddDropdown(event) {
+    return onHomepageTrigger(event);
+}
+
+function getSelectedCalendars(event) {
+    // eventオブジェクトから選択されたカレンダーのIDを取得
+    const selectedCalendarIds = event.formInput.selected_calendar_field;
+    
+    // 選択されたカレンダーの情報を取得
+    const selectedCalendars = selectedCalendarIds.map(id => {
+        const calendar = CalendarApp.getCalendarById(id);
+        return {
+            name: calendar.getName(),
+            id: calendar.getId()
+        };
+    });
+    
+    return selectedCalendars;
+}
 
 function onClickActionExport(event) {
     console.log(event);
 
-    const id = event.formInput['selected_calendar_field'];
+    const selectedCalendarIds = [];
+    let index = 0;
+    while (true) {
+        const id = event.formInput[`selected_calendar_field_${index}`];
+        if (!id) break;
+        selectedCalendarIds.push(id);
+        index++;
+    }
 
-    if (!id) {
+    if (selectedCalendarIds.length === 0) {
         return CardService.newActionResponseBuilder()
             .setNotification(CardService.newNotification()
                 .setText('カレンダーが選択されていません'))
@@ -70,9 +106,7 @@ function onClickActionExport(event) {
     const from = event.formInput['from_date_field'] ? new Date(event.formInput['from_date_field'].msSinceEpoch) : null;
     const to = event.formInput['to_date_field'] ? new Date(event.formInput['to_date_field'].msSinceEpoch) : null;
 
-    const calendar = CalendarApp.getCalendarById(id);
-
-    const url = exportDocs(calendar, from, to);
+    const url = exportDocs(selectedCalendarIds, from, to);
 
     return CardService.newActionResponseBuilder()
         .setOpenLink(CardService.newOpenLink()
