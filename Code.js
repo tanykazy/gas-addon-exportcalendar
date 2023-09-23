@@ -1,14 +1,15 @@
 function onHomepageTrigger(event) {
     console.log(event);
   
-    const numOfDropdowns = event.parameters ? event.parameters.numOfDropdowns || 1 : 1;
+    const numOfDropdowns = event.parameters ? parseInt(event.parameters.numOfDropdowns) : 1;
+    const selectedCalendars = event.parameters ? JSON.parse(event.parameters.selectedCalendars) : {};
   
     const card = CardService.newCardBuilder();
     const header = CardService.newCardHeader().setTitle('カレンダーを選択して書き出す');
     card.setHeader(header);
   
     for (let i = 0; i < numOfDropdowns; i++) {
-        const selectionInput = createCalendarDropdown(i);
+        const selectionInput = createCalendarDropdown(i, selectedCalendars[i]);
         const sectionSelectCalendar = CardService.newCardSection().addWidget(selectionInput);
         card.addSection(sectionSelectCalendar);
     }
@@ -17,7 +18,10 @@ function onHomepageTrigger(event) {
         .setText('+')
         .setOnClickAction(CardService.newAction()
             .setFunctionName('onAddDropdown')
-            .setParameters({numOfDropdowns: (parseInt(numOfDropdowns) + 1).toString()}));
+            .setParameters({
+                numOfDropdowns: (numOfDropdowns + 1).toString(),
+                selectedCalendars: JSON.stringify(selectedCalendars)
+            }));
     const sectionAddButton = CardService.newCardSection().addWidget(addButton);
   
     const now = new Date();
@@ -42,7 +46,7 @@ function onHomepageTrigger(event) {
             .setText('Export')
             .setOnClickAction(CardService.newAction()
                 .setLoadIndicator(CardService.LoadIndicator.SPINNER)
-                .setFunctionName(onClickActionExport.name)
+                .setFunctionName('onClickActionExport')
                 .setParameters({})));
 
     card.addSection(sectionAddButton);
@@ -51,21 +55,33 @@ function onHomepageTrigger(event) {
 
     return card.build();
 }
- 
-function createCalendarDropdown(index) {
+  
+
+function createCalendarDropdown(index, selectedCalendarId) {
     const calendars = getAllCalendars();
     const selectionInput = CardService.newSelectionInput()
         .setType(CardService.SelectionInputType.DROPDOWN)
         .setFieldName(`selected_calendar_field_${index}`)
         .setTitle(`カレンダー ${index + 1}`);
     for (const calendar of calendars) {
-        selectionInput.addItem(calendar.name, calendar.id, false);
+        selectionInput.addItem(calendar.name, calendar.id, calendar.id === selectedCalendarId);
     }
     return selectionInput;
 }
-  
+
 function onAddDropdown(event) {
-    return onHomepageTrigger(event);
+    console.log(event);
+    const numOfDropdowns = parseInt(event.parameters.numOfDropdowns) || 1;
+    const selectedCalendars = {};
+    for (let i = 0; i < numOfDropdowns; i++) {
+        selectedCalendars[i] = event.formInput[`selected_calendar_field_${i}`];
+    }
+    return onHomepageTrigger({
+        parameters: {
+            numOfDropdowns: numOfDropdowns.toString(),
+            selectedCalendars: JSON.stringify(selectedCalendars)
+        }
+    });
 }
 
 function getSelectedCalendars(event) {
