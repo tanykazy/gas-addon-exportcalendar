@@ -1,4 +1,3 @@
-
 function onHomepageTrigger(event) {
     console.log(event);
 
