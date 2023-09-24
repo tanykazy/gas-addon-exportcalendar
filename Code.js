@@ -1,6 +1,9 @@
+/**
+ * カレンダーコンテキストのホームページトリガー
+ * @param {Object} event - イベントオブジェクト
+ * @returns {GoogleAppsScript.Card_Service.Card} ホームカード
+ */
 function onHomepageTrigger(event) {
-    console.log(event);
-
     const card = CardService.newCardBuilder();
 
     const header = CardService.newCardHeader()
@@ -38,9 +41,12 @@ function onHomepageTrigger(event) {
     return card.build();
 }
 
+/**
+ * エクスポート関数を呼び出すイベントハンドラ
+ * @param {Object} event - イベントオブジェクト
+ * @returns {GoogleAppsScript.Card_Service.ActionResponse} アクションレスポンス
+ */
 function onClickActionExport(event) {
-    console.log(event);
-
     const calendars = getDisplayedCalendars();
 
     if (!calendars.length) {
@@ -50,8 +56,8 @@ function onClickActionExport(event) {
             .build();
     }
 
-    const from = event.formInput['from_date_field'] ? new Date(event.formInput['from_date_field'].msSinceEpoch) : null;
-    const to = event.formInput['to_date_field'] ? new Date(event.formInput['to_date_field'].msSinceEpoch) : null;
+    const from = event.formInput['from_date_field'];
+    const to = event.formInput['to_date_field'];
 
     if (!from || !to) {
         return CardService.newActionResponseBuilder()
@@ -60,7 +66,7 @@ function onClickActionExport(event) {
             .build();
     }
 
-    const url = exportDocs(calendars, from, to);
+    const url = exportDocs(calendars, new Date(from.msSinceEpoch), new Date(to.msSinceEpoch));
 
     return CardService.newActionResponseBuilder()
         .setOpenLink(CardService.newOpenLink()
