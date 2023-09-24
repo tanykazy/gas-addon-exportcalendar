@@ -17,7 +17,7 @@ function exportDocs(calendars, from, to) {
  * @returns {GoogleAppsScript.Drive.File} 作成されたドキュメントのファイル
  */
 function createReport(calendars, from, to) {
-    const docName = `カレンダー・レポート_${from.getFullYear()}年${from.getMonth() + 1}月${from.getDate()}日〜${to.getMonth() + 1}月${to.getDate()}日`;
+    const docName = `カレンダーレポート ${toYYYYMMDD(from)}-${toYYYYMMDD(to)}`;
     // 新規Googleドキュメントを作成
     const doc = DocumentApp.create(docName);
     const body = doc.getBody();
