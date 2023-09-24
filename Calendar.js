@@ -40,3 +40,14 @@ function sortCalendar(calendars) {
     }
     return [...primary, ...selected, ...owned, ...other, ...hidden];
 }
+
+/**
+ * ユーザーのマイカレンダーの中で、チェックがついていて表示されているカレンダーIDの一覧を配列で返す
+ * @returns {string[]} 表示されているカレンダーのIDの配列
+ */
+function getVisibleCalendarIds() {
+    const calendars = CalendarApp.getAllCalendars();
+    const visibleCalendarIds = calendars.filter(calendar => !calendar.isHidden() && calendar.isSelected()).map(calendar => calendar.getId());
+    console.log(visibleCalendarIds);
+    return visibleCalendarIds;
+}
