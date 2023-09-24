@@ -6,7 +6,7 @@
 
 /**
  * ユーザーがオーナーまたは登録しているすべてのカレンダーを取得する
- * @returns {CalendarParam} カレンダーの
+ * @returns {CalendarParam[]} カレンダーの名前とIDの配列
  */
 function getAllCalendars() {
     const calendars = CalendarApp.getAllCalendars();
@@ -19,6 +19,10 @@ function getAllCalendars() {
     });
 }
 
+/**
+ * 表示され選択されているカレンダーを取得する
+ * @returns {GoogleAppsScript.Calendar.Calendar[]} カレンダーの配列
+ */
 function getDisplayedCalendars() {
     const calendars = CalendarApp.getAllCalendars();
 
