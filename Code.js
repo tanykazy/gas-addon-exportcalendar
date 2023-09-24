@@ -1,31 +1,11 @@
 function onHomepageTrigger(event) {
     console.log(event);
-  
-    const numOfDropdowns = event.parameters ? parseInt(event.parameters.numOfDropdowns) : 1;
-    const selectedCalendars = event.parameters ? JSON.parse(event.parameters.selectedCalendars) : {};
-  
-    const card = CardService.newCardBuilder();
-    const header = CardService.newCardHeader().setTitle('カレンダーを選択して書き出す');
-    card.setHeader(header);
-  
-    for (let i = 0; i < numOfDropdowns; i++) {
-        const selectionInput = createCalendarDropdown(i, selectedCalendars[i]);
-        const sectionSelectCalendar = CardService.newCardSection().addWidget(selectionInput);
-        card.addSection(sectionSelectCalendar);
-    }
-  
-    const addButton = CardService.newTextButton()
-        .setText('+')
-        .setOnClickAction(CardService.newAction()
-            .setFunctionName('onAddDropdown')
-            .setParameters({
-                numOfDropdowns: (numOfDropdowns + 1).toString(),
-                selectedCalendars: JSON.stringify(selectedCalendars)
-            }));
-    const sectionAddButton = CardService.newCardSection().addWidget(addButton);
-  
-    const now = new Date();
 
+    const card = CardService.newCardBuilder();
+    const header = CardService.newCardHeader().setTitle('期間を選択してください');
+    card.setHeader(header);
+
+    const now = new Date();
     const fromDatePicker = CardService.newDatePicker()
         .setFieldName('from_date_field')
         .setTitle('From')
@@ -43,81 +23,21 @@ function onHomepageTrigger(event) {
 
     const footer = CardService.newFixedFooter()
         .setPrimaryButton(CardService.newTextButton()
-            .setText('Export')
+            .setText('日誌レポートを生成する')
             .setOnClickAction(CardService.newAction()
                 .setLoadIndicator(CardService.LoadIndicator.SPINNER)
-                .setFunctionName('onClickActionExport')
-                .setParameters({})));
+                .setFunctionName('onClickActionExport')));
 
-    card.addSection(sectionAddButton);
     card.addSection(sectionDatePick);
     card.setFixedFooter(footer);
 
     return card.build();
 }
-  
-
-function createCalendarDropdown(index, selectedCalendarId) {
-    const calendars = getAllCalendars();
-    const selectionInput = CardService.newSelectionInput()
-        .setType(CardService.SelectionInputType.DROPDOWN)
-        .setFieldName(`selected_calendar_field_${index}`)
-        .setTitle(`カレンダー ${index + 1}`);
-    for (const calendar of calendars) {
-        selectionInput.addItem(calendar.name, calendar.id, calendar.id === selectedCalendarId);
-    }
-    return selectionInput;
-}
-
-function onAddDropdown(event) {
-    console.log(event);
-    const numOfDropdowns = parseInt(event.parameters.numOfDropdowns) || 1;
-    const selectedCalendars = {};
-    for (let i = 0; i < numOfDropdowns; i++) {
-        selectedCalendars[i] = event.formInput[`selected_calendar_field_${i}`];
-    }
-    return onHomepageTrigger({
-        parameters: {
-            numOfDropdowns: numOfDropdowns.toString(),
-            selectedCalendars: JSON.stringify(selectedCalendars)
-        }
-    });
-}
-
-function getSelectedCalendars(event) {
-    // eventオブジェクトから選択されたカレンダーのIDを取得
-    const selectedCalendarIds = event.formInput.selected_calendar_field;
-    
-    // 選択されたカレンダーの情報を取得
-    const selectedCalendars = selectedCalendarIds.map(id => {
-        const calendar = CalendarApp.getCalendarById(id);
-        return {
-            name: calendar.getName(),
-            id: calendar.getId()
-        };
-    });
-    
-    return selectedCalendars;
-}
 
 function onClickActionExport(event) {
     console.log(event);
 
-    const selectedCalendarIds = [];
-    let index = 0;
-    while (true) {
-        const id = event.formInput[`selected_calendar_field_${index}`];
-        if (!id) break;
-        selectedCalendarIds.push(id);
-        index++;
-    }
-
-    if (selectedCalendarIds.length === 0) {
-        return CardService.newActionResponseBuilder()
-            .setNotification(CardService.newNotification()
-                .setText('カレンダーが選択されていません'))
-            .build();
-    }
+    const selectedCalendarIds = getVisibleCalendarIds();
 
     const from = event.formInput['from_date_field'] ? new Date(event.formInput['from_date_field'].msSinceEpoch) : null;
     const to = event.formInput['to_date_field'] ? new Date(event.formInput['to_date_field'].msSinceEpoch) : null;
