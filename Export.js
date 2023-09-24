@@ -1,25 +1,32 @@
+function onExportButtonClick() {
+    const calendarIds = getVisibleCalendarIds(); // Calendar.gsから呼び出し
+    
+    // 適切な開始日時と終了日時を設定
+    const from = new Date(); // 例: 今日の日付
+    from.setHours(0, 0, 0, 0);
+    
+    const to = new Date(); // 例: 明日の日付
+    // to.setDate(to.getDate() + 1);
+    // to.setHours(0, 0, 0, 0);
+
+    const reportUrl = exportDocs(calendarIds, from, to);
+    // reportUrlをユーザーに通知するか、適切な処理を行う
+    Browser.msgBox('Report URL:', reportUrl);
+}
+
 function exportDocs(calendarIds, from, to) {
     const calendars = setCalendars(calendarIds);
-    console.log(from);
-    console.log(to);
     return getReportURL(calendars, from, to);
 }
 
 function createReport(calendars, from, to) {
-    // 作成するドキュメントの名前を、生成する期間を反映して指定
     const docName = `カレンダー・レポート_${from.getFullYear()}年${from.getMonth() + 1}月${from.getDate()}日〜${to.getMonth() + 1}月${to.getDate()}日`;
     const doc = DocumentApp.create(docName);
     const body = doc.getBody();
-    
-    // カレンダー名を取得し、カンマで結合
-    const calendarNames = calendars.map(calendar => calendar.getName()).join(" , ");
-    
-    // レポートの冒頭を指定の書式に変更
+        
     body.appendParagraph("カレンダー・レポート\n");
-    body.appendParagraph(`カレンダー名 : ${calendarNames}\n`);
     body.appendParagraph(`期間: ${from.toLocaleDateString()} から ${to.toLocaleDateString()}\n\n`);
     
-    // 全てのカレンダーからのイベントを保持する配列
     const allEventsData = [];
 
     for (const calendar of calendars) {
@@ -27,10 +34,16 @@ function createReport(calendars, from, to) {
     
         const eventData = events.map(event => {
             const startTime = event.getStartTime();
-            const endTime = event.getEndTime();
+            
+            // イベントが終日のものかどうかを確認
+            let timeStr = "";
+            if (!event.isAllDayEvent()) {
+                timeStr = `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`;
+            }
+            
             return {
                 date: startTime.toLocaleDateString(),
-                time: `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')} - ${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`,
+                time: timeStr,
                 title: event.getTitle(),
                 description: event.getDescription() || "",
             };
@@ -39,26 +52,22 @@ function createReport(calendars, from, to) {
         allEventsData.push(...eventData);
     }
 
-    // 日付と時刻でソート
-    allEventsData.sort((a, b) => new Date(a.date + ' ' + a.time.split(' - ')[0]) - new Date(b.date + ' ' + b.time.split(' - ')[0]));
+    allEventsData.sort((a, b) => new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time));
     
-    // 各日付ごとに表を作成
     let currentDate = "";
     let currentTableData = [["時刻", "内容", "詳細"]];
     for (const eventData of allEventsData) {
         if (currentDate !== eventData.date) {
-            // 新しい日付の場合、これまでの表を追加して新しい表を開始
             if (currentTableData.length > 1) {
                 body.appendParagraph(currentDate);
                 body.appendTable(currentTableData);
-                body.appendParagraph("\n"); // 空行を追加
+                body.appendParagraph("\n");
             }
             currentDate = eventData.date;
             currentTableData = [["時刻", "内容", "詳細"]];
         }
         currentTableData.push([eventData.time, eventData.title, eventData.description]);
     }
-    // 最後の表を追加
     if (currentTableData.length > 1) {
         body.appendParagraph(currentDate);
         body.appendTable(currentTableData);
@@ -96,6 +105,6 @@ function setCalendars(calendarIds) {
             return null;
         }
         return calendar;
-    }).filter(calendar => calendar !== null); // nullのカレンダーをフィルタリング
+    }).filter(calendar => calendar !== null);
     return calendars;
 }
