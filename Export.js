@@ -6,7 +6,7 @@
  * @returns {string} カレンダーのデータを書き出したドキュメントファイルのURL
  */
 function exportDocs(calendars, from, to) {
-  const calendars = setCalendars(calendarIds);
+  // const calendars = setCalendars(calendarIds);
   return getReportURL(calendars, from, to);
 }
 
@@ -111,29 +111,29 @@ function createReportInFolder(report) {
   return report;
 }
 
-function setCalendars(calendarIds) {
-  const calendars = calendarIds.map(id => {
-      const calendar = CalendarApp.getCalendarById(id);
-      if (!calendar) {
-          console.error(`カレンダーが見つかりません: ${id}`);
-          return null;
-      }
-      return calendar;
-  }).filter(calendar => calendar !== null);
-  return calendars;
-}
+// function setCalendars(calendarIds) {
+//   const calendars = calendarIds.map(id => {
+//       const calendar = CalendarApp.getCalendarById(id);
+//       if (!calendar) {
+//           console.error(`カレンダーが見つかりません: ${id}`);
+//           return null;
+//       }
+//       return calendar;
+//   }).filter(calendar => calendar !== null);
+//   return calendars;
+// }
 
-function onExportButtonClick() {
-  const calendarIds = getDisplayedCalendars(); // Calendar.gsから呼び出し
+// function onExportButtonClick() {
+//   const calendarIds = getDisplayedCalendars(); // Calendar.gsから呼び出し
 
-  // 適切な開始日時と終了日時を設定
-  const from = new Date(); // 例: 今日の日付
-  from.setHours(0, 0, 0, 0);
+//   // 適切な開始日時と終了日時を設定
+//   const from = new Date(); // 例: 今日の日付
+//   from.setHours(0, 0, 0, 0);
 
-  const to = new Date(); // 例: 明日の日付
+//   const to = new Date(); // 例: 明日の日付
 
-  const reportUrl = exportDocs(calendarIds, from, to);
-  // reportUrlをユーザーに通知するか、適切な処理を行う
-  Browser.msgBox('Report URL:', reportUrl);
-}
+//   const reportUrl = exportDocs(calendarIds, from, to);
+//   // reportUrlをユーザーに通知するか、適切な処理を行う
+//   Browser.msgBox('Report URL:', reportUrl);
+// }
 
