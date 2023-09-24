@@ -1,8 +1,8 @@
 /**
  * カレンダーの内容をドキュメントにエクスポートする
  * @param {GoogleAppsScript.Calendar.Calendar[]} calendars - カレンダー選択UIで選択されたカレンダー
- * @param {Date | null} from - 期間の開始日付
- * @param {Date | null} to - 期間の終了日付
+ * @param {Date} from - 期間の開始日付
+ * @param {Date} to - 期間の終了日付
  * @returns {string} カレンダーのデータを書き出したドキュメントファイルのURL
  */
 function exportDocs(calendars, from, to) {
@@ -12,8 +12,8 @@ function exportDocs(calendars, from, to) {
 /**
  * カレンダーから指定された期間のイベントを取得し、レポートのドキュメントを作成する
  * @param {GoogleAppsScript.Calendar.Calendar[]} calendars - 選択されたカレンダー
- * @param {Date | null} from - 期間の開始日付
- * @param {Date | null} to - 期間の終了日付
+ * @param {Date} from - 期間の開始日付
+ * @param {Date} to - 期間の終了日付
  * @returns {GoogleAppsScript.Drive.File} 作成されたドキュメントのファイル
  */
 function createReport(calendars, from, to) {
@@ -77,8 +77,8 @@ function createReport(calendars, from, to) {
 /**
  * レポートのドキュメントのURLを取得する
  * @param {GoogleAppsScript.Calendar} calendar - カレンダー選択UIで選択されたカレンダー
- * @param {Date | null} from - 期間の開始日付
- * @param {Date | null} to - 期間の終了日付
+ * @param {Date} from - 期間の開始日付
+ * @param {Date} to - 期間の終了日付
  * @returns {string} レポートのドキュメントのURL
  */
 function getReportURL(calendars, from, to) {
