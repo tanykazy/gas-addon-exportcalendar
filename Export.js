@@ -6,8 +6,8 @@
  * @returns {string} カレンダーのデータを書き出したドキュメントファイルのURL
  */
 function exportDocs(calendars, from, to) {
-  const calendar = calendars.pop();
-  return getReportURL(calendar, from, to);
+  // const calendar = calendars.pop();
+  // return getReportURL(calendar, from, to);
 }
 
 /**
