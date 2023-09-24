@@ -41,10 +41,24 @@ function onHomepageTrigger(event) {
 function onClickActionExport(event) {
     console.log(event);
 
+    const calendars = getDisplayedCalendars();
+
+    if (!calendars.length) {
+        return CardService.newActionResponseBuilder()
+            .setNotification(CardService.newNotification()
+                .setText('カレンダーが選択されていません'))
+            .build();
+    }
+
     const from = event.formInput['from_date_field'] ? new Date(event.formInput['from_date_field'].msSinceEpoch) : null;
     const to = event.formInput['to_date_field'] ? new Date(event.formInput['to_date_field'].msSinceEpoch) : null;
 
-    const calendars = getDisplayedCalendars();
+    if (!from || !to) {
+        return CardService.newActionResponseBuilder()
+            .setNotification(CardService.newNotification()
+                .setText('期間が選択されていません'))
+            .build();
+    }
 
     const url = exportDocs(calendars, from, to);
 
