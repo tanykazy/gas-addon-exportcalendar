@@ -6,17 +6,6 @@
  * @returns {string} カレンダーのデータを書き出したドキュメントファイルのURL
  */
 function exportDocs(calendars, from, to) {
-    return getReportURL(calendars, from, to);
-}
-
-/**
- * カレンダーから指定された期間のイベントを取得し、レポートのドキュメントを作成する
- * @param {GoogleAppsScript.Calendar.Calendar[]} calendars - 選択されたカレンダー
- * @param {Date} from - 期間の開始日付
- * @param {Date} to - 期間の終了日付
- * @returns {GoogleAppsScript.Drive.File} 作成されたドキュメントのファイル
- */
-function createReport(calendars, from, to) {
     const docName = `カレンダーレポート ${toYYYYMMDD(from)}-${toYYYYMMDD(to)}`;
     // 新規Googleドキュメントを作成
     const doc = DocumentApp.create(docName);
@@ -71,41 +60,5 @@ function createReport(calendars, from, to) {
         body.appendTable(currentTableData);
     }
 
-    return DriveApp.getFileById(doc.getId());
-}
-
-/**
- * レポートのドキュメントのURLを取得する
- * @param {GoogleAppsScript.Calendar} calendar - カレンダー選択UIで選択されたカレンダー
- * @param {Date} from - 期間の開始日付
- * @param {Date} to - 期間の終了日付
- * @returns {string} レポートのドキュメントのURL
- */
-function getReportURL(calendars, from, to) {
-    const report = createReport(calendars, from, to);
-    const movedReport = createReportInFolder(report);
-    return movedReport.getUrl();
-}
-
-/**
- * レポートを指定のフォルダに保存する
- * @param {GoogleAppsScript.Drive.File} report - 移動するドキュメントのファイル
- * @returns {GoogleAppsScript.Drive.File} フォルダに移動されたドキュメントのファイル
- */
-function createReportInFolder(report) {
-    const folderName = "calendarReport";
-    let folder;
-
-    // フォルダの存在確認および作成
-    const folders = DriveApp.getFoldersByName(folderName);
-    if (folders.hasNext()) {
-        folder = folders.next();
-    } else {
-        folder = DriveApp.createFolder(folderName);
-    }
-
-    // ドキュメントをフォルダに移動
-    report.moveTo(folder);
-
-    return report;
+    return doc.getUrl();
 }
