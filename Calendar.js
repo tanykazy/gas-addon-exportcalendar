@@ -1,10 +1,4 @@
 /**
- * @typedef {object} CalendarParam - カレンダーの名前とID
- * @property {string} name - カレンダーの名前
- * @property {string} id - カレンダーのID
- */
-
-/**
  * ユーザーがオーナーまたは登録しているすべてのカレンダーを取得する
  * @returns {CalendarParam[]} カレンダーの名前とIDの配列
  */
@@ -25,16 +19,10 @@ function getAllCalendars() {
  */
 function getDisplayedCalendars() {
     const calendars = CalendarApp.getAllCalendars();
-
-    return calendars.filter((calendar) => {
-        if (calendar.isHidden()) {
-            return false;
-        }
-        if (calendar.isSelected()) {
-            return true;
-        }
-        return false;
-    });
+    const visibleCalendarIds = calendars.filter(calendar => !calendar.isHidden() && calendar.isSelected()).map(calendar => calendar.getId());
+    console.log(visibleCalendarIds);
+    
+    return visibleCalendarIds;
 }
 
 function sortCalendar(calendars) {
